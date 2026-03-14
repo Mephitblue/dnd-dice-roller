@@ -56,7 +56,7 @@ export default function DiceAnimation({ result, delay = 0 }: DiceAnimationProps)
       initial={{ scale: 0, rotate: -180, opacity: 0 }}
       animate={{
         scale: [0, 1.2, 0.9, 1.1, 1],
-        rotate: [0, 360, 540],
+        rotate: [0, 360, 720],
         opacity: 1,
       }}
       transition={{ duration: 0.8, delay, ease: "easeOut" }}
