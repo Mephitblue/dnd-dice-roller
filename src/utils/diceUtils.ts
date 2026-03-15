@@ -22,10 +22,16 @@ export function isCriticalFail(type: DiceType, value: number): boolean {
   return type === "d20" && value === 1;
 }
 
-export function rollD20WithMode(mode: AdvantageMode): number {
-  if (mode === "advantage") return Math.max(rollDie(20), rollDie(20));
-  if (mode === "disadvantage") return Math.min(rollDie(20), rollDie(20));
-  return rollDie(20);
+export function rollD20WithMode(mode: AdvantageMode): { kept: number; discarded: number | null } {
+  if (mode === "advantage") {
+    const a = rollDie(20), b = rollDie(20);
+    return a >= b ? { kept: a, discarded: b } : { kept: b, discarded: a };
+  }
+  if (mode === "disadvantage") {
+    const a = rollDie(20), b = rollDie(20);
+    return a <= b ? { kept: a, discarded: b } : { kept: b, discarded: a };
+  }
+  return { kept: rollDie(20), discarded: null };
 }
 
 export const DICE_CONFIGS: Record<DiceType, { sides: number; color: string; label: string }> = {

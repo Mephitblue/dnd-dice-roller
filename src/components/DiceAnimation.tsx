@@ -15,7 +15,10 @@ export default function DiceAnimation({ result, delay = 0 }: DiceAnimationProps)
   const cfg = DICE_CONFIGS[result.type];
   const [displayValue, setDisplayValue] = useState<number>(1);
   const [settled, setSettled] = useState(false);
+  const [displayDiscarded, setDisplayDiscarded] = useState<number>(1);
+  const [settledDiscarded, setSettledDiscarded] = useState(false);
 
+  // Animation for the kept die
   useEffect(() => {
     setSettled(false);
     setDisplayValue(1);
@@ -45,6 +48,37 @@ export default function DiceAnimation({ result, delay = 0 }: DiceAnimationProps)
     return () => clearTimeout(frame);
   }, [result.id, result.value, cfg.sides, delay]);
 
+  // Animation for the discarded die (only runs when discardedValue is defined)
+  useEffect(() => {
+    if (result.discardedValue === undefined) return;
+    setSettledDiscarded(false);
+    setDisplayDiscarded(1);
+
+    const startTime = Date.now() + delay * 1000;
+    const duration = 1200;
+    let frame: ReturnType<typeof setTimeout>;
+
+    function cycle() {
+      const now = Date.now();
+      if (now < startTime) {
+        frame = setTimeout(cycle, 50);
+        return;
+      }
+      const elapsed = now - startTime;
+      if (elapsed < duration - 200) {
+        setDisplayDiscarded(Math.floor(Math.random() * cfg.sides) + 1);
+        const interval = 50 + (elapsed / duration) * 150;
+        frame = setTimeout(cycle, interval);
+      } else {
+        setDisplayDiscarded(result.discardedValue!);
+        setSettledDiscarded(true);
+      }
+    }
+
+    frame = setTimeout(cycle, 50);
+    return () => clearTimeout(frame);
+  }, [result.id, result.discardedValue, cfg.sides, delay]);
+
   const glowColor = result.isCritSuccess
     ? "#d4a843"
     : result.isCritFail
@@ -61,129 +95,197 @@ export default function DiceAnimation({ result, delay = 0 }: DiceAnimationProps)
       }}
       transition={{ duration: 0.8, delay, ease: "easeOut" }}
     >
-      <motion.div
-        animate={
-          settled
-            ? result.isCritSuccess
-              ? {
-                  boxShadow: [
-                    `0 0 0px ${glowColor}`,
-                    `0 0 30px ${glowColor}`,
-                    `0 0 15px ${glowColor}`,
-                    `0 0 25px ${glowColor}`,
-                    `0 0 10px ${glowColor}`,
-                  ],
-                }
-              : result.isCritFail
-              ? {
-                  x: [-5, 5, -5, 5, -3, 3, 0],
-                  boxShadow: [
-                    "0 0 0px #8b1a1a",
-                    "0 0 20px #8b1a1a",
-                    "0 0 5px #8b1a1a",
-                  ],
-                }
+      <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+        {/* Kept die */}
+        <motion.div
+          animate={
+            settled
+              ? result.isCritSuccess
+                ? {
+                    boxShadow: [
+                      `0 0 0px ${glowColor}`,
+                      `0 0 30px ${glowColor}`,
+                      `0 0 15px ${glowColor}`,
+                      `0 0 25px ${glowColor}`,
+                      `0 0 10px ${glowColor}`,
+                    ],
+                  }
+                : result.isCritFail
+                ? {
+                    x: [-5, 5, -5, 5, -3, 3, 0],
+                    boxShadow: [
+                      "0 0 0px #8b1a1a",
+                      "0 0 20px #8b1a1a",
+                      "0 0 5px #8b1a1a",
+                    ],
+                  }
+                : {}
               : {}
-            : {}
-        }
-        transition={{ duration: 0.5 }}
-      >
-        <Box
-          sx={{
-            position: "relative",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            width: { xs: 90, sm: 110 },
-            height: { xs: 90, sm: 110 },
-            border: `2px solid ${glowColor}80`,
-            borderRadius: 2,
-            background: result.isCritSuccess
-              ? `radial-gradient(circle, ${glowColor}30 0%, #1a1a2e 70%)`
-              : result.isCritFail
-              ? "radial-gradient(circle, #8b1a1a30 0%, #1a1a2e 70%)"
-              : "#1a1a2e",
-            boxShadow: settled ? `0 0 ${result.isCritSuccess || result.isCritFail ? 20 : 8}px ${glowColor}40` : "none",
-            overflow: "hidden",
-          }}
+          }
+          transition={{ duration: 0.5 }}
         >
-          <Box sx={{ position: "absolute", opacity: 0.15 }}>
-            <DiceIcon type={result.type} color={glowColor} size={70} />
+          <Box
+            sx={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              width: { xs: 90, sm: 110 },
+              height: { xs: 90, sm: 110 },
+              border: `2px solid ${glowColor}80`,
+              borderRadius: 2,
+              background: result.isCritSuccess
+                ? `radial-gradient(circle, ${glowColor}30 0%, #1a1a2e 70%)`
+                : result.isCritFail
+                ? "radial-gradient(circle, #8b1a1a30 0%, #1a1a2e 70%)"
+                : "#1a1a2e",
+              boxShadow: settled ? `0 0 ${result.isCritSuccess || result.isCritFail ? 20 : 8}px ${glowColor}40` : "none",
+              overflow: "hidden",
+            }}
+          >
+            <Box sx={{ position: "absolute", opacity: 0.15 }}>
+              <DiceIcon type={result.type} color={glowColor} size={70} />
+            </Box>
+            <Typography
+              sx={{
+                fontFamily: '"Cinzel Decorative", cursive',
+                fontSize: { xs: "1.6rem", sm: "2rem" },
+                fontWeight: 900,
+                color: glowColor,
+                lineHeight: 1,
+                zIndex: 1,
+                textShadow: `0 0 10px ${glowColor}80`,
+              }}
+            >
+              {displayValue}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                color: `${glowColor}90`,
+                fontFamily: '"Cinzel", serif',
+                fontSize: "0.6rem",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                zIndex: 1,
+              }}
+            >
+              {cfg.label}
+            </Typography>
+            {result.isCritSuccess && settled && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 2,
+                  right: 4,
+                  fontSize: "0.6rem",
+                  color: "#d4a843",
+                  fontFamily: '"Cinzel", serif',
+                  fontWeight: 700,
+                }}
+              >
+                CRIT!
+              </Box>
+            )}
+            {result.isCritFail && settled && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 2,
+                  right: 4,
+                  fontSize: "0.6rem",
+                  color: "#8b1a1a",
+                  fontFamily: '"Cinzel", serif',
+                  fontWeight: 700,
+                }}
+              >
+                FAIL
+              </Box>
+            )}
+            {result.advantageMode && result.advantageMode !== "none" && settled && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  bottom: 2,
+                  left: 4,
+                  fontSize: "0.55rem",
+                  color: result.advantageMode === "advantage" ? "#2ecc71" : "#8b1a1a",
+                  fontFamily: '"Cinzel", serif',
+                  fontWeight: 700,
+                }}
+              >
+                {result.advantageMode === "advantage" ? "ADV" : "DIS"}
+              </Box>
+            )}
           </Box>
-          <Typography
+        </motion.div>
+
+        {/* Discarded die — only rendered for ADV/DIS rolls */}
+        {result.discardedValue !== undefined && (
+          <Box
             sx={{
-              fontFamily: '"Cinzel Decorative", cursive',
-              fontSize: { xs: "1.6rem", sm: "2rem" },
-              fontWeight: 900,
-              color: glowColor,
-              lineHeight: 1,
-              zIndex: 1,
-              textShadow: `0 0 10px ${glowColor}80`,
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              width: { xs: 90, sm: 110 },
+              height: { xs: 90, sm: 110 },
+              border: "2px solid #2a2a3e",
+              borderRadius: 2,
+              background: "#14141f",
+              opacity: settledDiscarded ? 0.35 : 0.7,
+              transition: "opacity 0.4s ease",
+              overflow: "hidden",
             }}
           >
-            {displayValue}
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{
-              color: `${glowColor}90`,
-              fontFamily: '"Cinzel", serif',
-              fontSize: "0.6rem",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              zIndex: 1,
-            }}
-          >
-            {cfg.label}
-          </Typography>
-          {result.isCritSuccess && settled && (
-            <Box
+            <Box sx={{ position: "absolute", opacity: 0.1 }}>
+              <DiceIcon type={result.type} color="#4a4a5e" size={70} />
+            </Box>
+            <Typography
               sx={{
-                position: "absolute",
-                top: 2,
-                right: 4,
+                fontFamily: '"Cinzel Decorative", cursive',
+                fontSize: { xs: "1.6rem", sm: "2rem" },
+                fontWeight: 900,
+                color: "#4a4a5e",
+                lineHeight: 1,
+                zIndex: 1,
+              }}
+            >
+              {displayDiscarded}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#3a3a52",
+                fontFamily: '"Cinzel", serif',
                 fontSize: "0.6rem",
-                color: "#d4a843",
-                fontFamily: '"Cinzel", serif',
                 fontWeight: 700,
+                letterSpacing: "0.1em",
+                zIndex: 1,
               }}
             >
-              CRIT!
-            </Box>
-          )}
-          {result.isCritFail && settled && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: 2,
-                right: 4,
-                fontSize: "0.6rem",
-                color: "#8b1a1a",
-                fontFamily: '"Cinzel", serif',
-                fontWeight: 700,
-              }}
-            >
-              FAIL
-            </Box>
-          )}
-          {result.advantageMode && result.advantageMode !== "none" && settled && (
-            <Box
-              sx={{
-                position: "absolute",
-                bottom: 2,
-                left: 4,
-                fontSize: "0.55rem",
-                color: result.advantageMode === "advantage" ? "#2ecc71" : "#8b1a1a",
-                fontFamily: '"Cinzel", serif',
-                fontWeight: 700,
-              }}
-            >
-              {result.advantageMode === "advantage" ? "ADV" : "DIS"}
-            </Box>
-          )}
-        </Box>
-      </motion.div>
+              {cfg.label}
+            </Typography>
+            {settledDiscarded && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 2,
+                  right: 4,
+                  fontSize: "0.65rem",
+                  color: "#3a3a52",
+                  fontFamily: '"Cinzel", serif',
+                  fontWeight: 700,
+                }}
+              >
+                ✕
+              </Box>
+            )}
+          </Box>
+        )}
+      </Box>
     </motion.div>
   );
 }

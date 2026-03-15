@@ -22,6 +22,7 @@ export interface DieResult {
   isCritFail: boolean;
   timestamp: number;
   advantageMode?: AdvantageMode;
+  discardedValue?: number;
 }
 
 export interface RollRecord {

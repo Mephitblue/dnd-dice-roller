@@ -43,10 +43,11 @@ export default function DiceRoller() {
     const rolled: DieResult[] = queue.map((die) => {
       const cfg = DICE_CONFIGS[die.type];
       const isD20 = die.type === "d20";
+      const d20Roll = isD20 ? rollD20WithMode(advantageMode) : null;
       const value = die.type === "d100"
         ? rollD100()
         : isD20
-        ? rollD20WithMode(advantageMode)
+        ? d20Roll!.kept
         : rollDie(cfg.sides);
       return {
         id: die.id,
@@ -56,6 +57,7 @@ export default function DiceRoller() {
         isCritFail: isCriticalFail(die.type, value),
         timestamp: Date.now(),
         advantageMode: isD20 ? advantageMode : undefined,
+        discardedValue: d20Roll?.discarded ?? undefined,
       };
     });
 
