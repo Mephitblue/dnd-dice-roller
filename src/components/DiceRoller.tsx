@@ -6,14 +6,15 @@ import DiceSelector from "./DiceSelector";
 import DiceQueue from "./DiceQueue";
 import RollResults from "./RollResults";
 import RollHistory from "./RollHistory";
-import { DiceType, QueuedDie, DieResult, RollRecord } from "@/types/dice";
-import { DICE_CONFIGS, rollDie, rollD100, isCriticalSuccess, isCriticalFail } from "@/utils/diceUtils";
+import { DiceType, QueuedDie, DieResult, RollRecord, AdvantageMode } from "@/types/dice";
+import { DICE_CONFIGS, rollDie, rollD100, rollD20WithMode, isCriticalSuccess, isCriticalFail } from "@/utils/diceUtils";
 
 export default function DiceRoller() {
   const [queue, setQueue] = useState<QueuedDie[]>([]);
   const [results, setResults] = useState<DieResult[]>([]);
   const [history, setHistory] = useState<RollRecord[]>([]);
   const [isRolling, setIsRolling] = useState(false);
+  const [advantageMode, setAdvantageMode] = useState<AdvantageMode>("none");
 
   const addToQueue = useCallback((type: DiceType) => {
     setQueue((prev) => [...prev, { id: uuidv4(), type }]);
@@ -41,7 +42,12 @@ export default function DiceRoller() {
 
     const rolled: DieResult[] = queue.map((die) => {
       const cfg = DICE_CONFIGS[die.type];
-      const value = die.type === "d100" ? rollD100() : rollDie(cfg.sides);
+      const isD20 = die.type === "d20";
+      const value = die.type === "d100"
+        ? rollD100()
+        : isD20
+        ? rollD20WithMode(advantageMode)
+        : rollDie(cfg.sides);
       return {
         id: die.id,
         type: die.type,
@@ -49,6 +55,7 @@ export default function DiceRoller() {
         isCritSuccess: isCriticalSuccess(die.type, value, cfg.sides),
         isCritFail: isCriticalFail(die.type, value),
         timestamp: Date.now(),
+        advantageMode: isD20 ? advantageMode : undefined,
       };
     });
 
@@ -117,6 +124,8 @@ export default function DiceRoller() {
         onRemove={removeById}
         onRoll={roll}
         isRolling={isRolling}
+        advantageMode={advantageMode}
+        onAdvantageChange={setAdvantageMode}
       />
 
       <RollResults results={results} isRolling={isRolling} />

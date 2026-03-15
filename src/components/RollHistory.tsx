@@ -70,7 +70,7 @@ export default function RollHistory({ history, onClear }: RollHistoryProps) {
                       border: `1px solid ${DICE_CONFIGS[die.type].color}40`,
                     }}
                   >
-                    {DICE_CONFIGS[die.type].label}: {die.value}
+                    {DICE_CONFIGS[die.type].label}{die.advantageMode && die.advantageMode !== "none" ? `(${die.advantageMode === "advantage" ? "ADV" : "DIS"})` : ""}: {die.value}
                     {die.isCritSuccess ? "★" : die.isCritFail ? "✗" : ""}
                   </Typography>
                 ))}

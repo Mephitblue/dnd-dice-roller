@@ -167,6 +167,21 @@ export default function DiceAnimation({ result, delay = 0 }: DiceAnimationProps)
               FAIL
             </Box>
           )}
+          {result.advantageMode && result.advantageMode !== "none" && settled && (
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: 2,
+                left: 4,
+                fontSize: "0.55rem",
+                color: result.advantageMode === "advantage" ? "#2ecc71" : "#8b1a1a",
+                fontFamily: '"Cinzel", serif',
+                fontWeight: 700,
+              }}
+            >
+              {result.advantageMode === "advantage" ? "ADV" : "DIS"}
+            </Box>
+          )}
         </Box>
       </motion.div>
     </motion.div>

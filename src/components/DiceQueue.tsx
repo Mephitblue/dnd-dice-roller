@@ -2,7 +2,7 @@
 import { Box, Typography, Chip, Button } from "@mui/material";
 import { AnimatePresence, motion } from "framer-motion";
 import DiceIcon from "./DiceIcon";
-import { DiceType, QueuedDie } from "@/types/dice";
+import { DiceType, QueuedDie, AdvantageMode } from "@/types/dice";
 import { DICE_CONFIGS } from "@/utils/diceUtils";
 
 interface DiceQueueProps {
@@ -10,9 +10,19 @@ interface DiceQueueProps {
   onRemove: (id: string) => void;
   onRoll: () => void;
   isRolling: boolean;
+  advantageMode: AdvantageMode;
+  onAdvantageChange: (mode: AdvantageMode) => void;
 }
 
-export default function DiceQueue({ queue, onRemove, onRoll, isRolling }: DiceQueueProps) {
+const ADVANTAGE_OPTIONS: { mode: AdvantageMode; label: string; color: string }[] = [
+  { mode: "disadvantage", label: "Disadvantage", color: "#8b1a1a" },
+  { mode: "none",         label: "Normal",       color: "#9a8d70" },
+  { mode: "advantage",    label: "Advantage",    color: "#2ecc71" },
+];
+
+export default function DiceQueue({ queue, onRemove, onRoll, isRolling, advantageMode, onAdvantageChange }: DiceQueueProps) {
+  const hasD20 = queue.some((d) => d.type === "d20");
+
   return (
     <Box
       sx={{
@@ -73,6 +83,47 @@ export default function DiceQueue({ queue, onRemove, onRoll, isRolling }: DiceQu
           })}
         </AnimatePresence>
       </Box>
+
+      {hasD20 && (
+        <Box sx={{ mb: 2 }}>
+          <Typography
+            variant="caption"
+            sx={{ color: "#9a8d70", fontFamily: '"Cinzel", serif', letterSpacing: "0.1em", display: "block", mb: 1 }}
+          >
+            D20 ROLL MODE
+          </Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            {ADVANTAGE_OPTIONS.map(({ mode, label, color }) => {
+              const active = advantageMode === mode;
+              return (
+                <Button
+                  key={mode}
+                  size="small"
+                  onClick={() => onAdvantageChange(mode)}
+                  sx={{
+                    flex: 1,
+                    py: 0.75,
+                    fontSize: "0.65rem",
+                    letterSpacing: "0.1em",
+                    fontFamily: '"Cinzel", serif',
+                    fontWeight: 700,
+                    background: active ? `${color}25` : "transparent",
+                    border: active ? `1px solid ${color}` : "1px solid #2a2a3e",
+                    color: active ? color : "#4a4a5e",
+                    "&:hover": {
+                      background: `${color}15`,
+                      border: `1px solid ${color}80`,
+                      color: color,
+                    },
+                  }}
+                >
+                  {label}
+                </Button>
+              );
+            })}
+          </Box>
+        </Box>
+      )}
 
       <Button
         variant="contained"

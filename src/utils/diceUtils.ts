@@ -1,4 +1,4 @@
-import { DiceType } from "@/types/dice";
+import { DiceType, AdvantageMode } from "@/types/dice";
 
 export function rollDie(sides: number): number {
   return Math.floor(Math.random() * sides) + 1;
@@ -11,15 +11,21 @@ export function rollD100(): number {
 }
 
 export function isCriticalSuccess(
-  _type: DiceType,
+  type: DiceType,
   value: number,
   sides: number
 ): boolean {
-  return value === sides;
+  return type === "d20" && value === sides;
 }
 
 export function isCriticalFail(type: DiceType, value: number): boolean {
   return type === "d20" && value === 1;
+}
+
+export function rollD20WithMode(mode: AdvantageMode): number {
+  if (mode === "advantage") return Math.max(rollDie(20), rollDie(20));
+  if (mode === "disadvantage") return Math.min(rollDie(20), rollDie(20));
+  return rollDie(20);
 }
 
 export const DICE_CONFIGS: Record<DiceType, { sides: number; color: string; label: string }> = {
