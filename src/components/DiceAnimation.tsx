@@ -86,17 +86,17 @@ export default function DiceAnimation({ result, delay = 0 }: DiceAnimationProps)
     : cfg.color;
 
   return (
-    <motion.div
-      initial={{ scale: 0, rotate: -180, opacity: 0 }}
-      animate={{
-        scale: [0, 1.2, 0.9, 1.1, 1],
-        rotate: [0, 360, 720],
-        opacity: 1,
-      }}
-      transition={{ duration: 0.8, delay, ease: "easeOut" }}
-    >
-      <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-        {/* Kept die */}
+    <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+      {/* Kept die */}
+      <motion.div
+        initial={{ scale: 0, rotate: -180, opacity: 0 }}
+        animate={{
+          scale: [0, 1.2, 0.9, 1.1, 1],
+          rotate: [0, 360, 720],
+          opacity: 1,
+        }}
+        transition={{ duration: 0.8, delay, ease: "easeOut" }}
+      >
         <motion.div
           animate={
             settled
@@ -220,9 +220,19 @@ export default function DiceAnimation({ result, delay = 0 }: DiceAnimationProps)
             )}
           </Box>
         </motion.div>
+      </motion.div>
 
-        {/* Discarded die — only rendered for ADV/DIS rolls */}
-        {result.discardedValue !== undefined && (
+      {/* Discarded die — only rendered for ADV/DIS rolls */}
+      {result.discardedValue !== undefined && (
+        <motion.div
+          initial={{ scale: 0, rotate: -180, opacity: 0 }}
+          animate={{
+            scale: [0, 1.2, 0.9, 1.1, 1],
+            rotate: [0, 360, 720],
+            opacity: 1,
+          }}
+          transition={{ duration: 0.8, delay, ease: "easeOut" }}
+        >
           <Box
             sx={{
               position: "relative",
@@ -284,8 +294,8 @@ export default function DiceAnimation({ result, delay = 0 }: DiceAnimationProps)
               </Box>
             )}
           </Box>
-        )}
-      </Box>
-    </motion.div>
+        </motion.div>
+      )}
+    </Box>
   );
 }
