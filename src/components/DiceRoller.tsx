@@ -74,7 +74,7 @@ export default function DiceRoller() {
     setQueue([]);
 
     setTimeout(() => setIsRolling(false), 1500);
-  }, [queue, isRolling]);
+  }, [queue, isRolling, advantageMode]);
 
   return (
     <Container maxWidth="md" sx={{ py: 4, position: "relative", zIndex: 1 }}>
