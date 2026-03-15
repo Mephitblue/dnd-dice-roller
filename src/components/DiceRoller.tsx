@@ -18,6 +18,7 @@ export default function DiceRoller() {
 
   const addToQueue = useCallback((type: DiceType) => {
     setQueue((prev) => [...prev, { id: uuidv4(), type }]);
+    if (type === "d20") setAdvantageMode("none");
   }, []);
 
   const removeOneFromQueue = useCallback((type: DiceType) => {
